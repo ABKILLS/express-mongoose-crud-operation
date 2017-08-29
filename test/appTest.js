@@ -38,7 +38,7 @@ describe('userData', () => {
 });
 
 describe('CRUD validation',() =>{
-	beforeEach(() => {
+	before(() => {
 		sinonStub.yields(null, [{name: 'abhishek',age: 20}]);
 	});
 	it('Find validation',(done) => {
@@ -53,17 +53,22 @@ describe('CRUD validation',() =>{
 				expect(res.body[0].age).to.equal(20);
 				done();
 		});
+	});
+describe('CRUD validation',() =>{
+	before(() => {
+		sinon.stub(userData, 'create').yields(null, [{name: 'abhishek',age: 20}]);
 
+	});
 	it('Insert Validation',(done) => {
 		supertest(url)
-			.port('/insert')
+			.post('/insert')
 			.expect(200)
 			.set('Accept', 'application/json')
 			.expect('Content-Type', /json/)
 			.end((err, res) => {
 				if (err) return done(err);
 				res.body[0].name = "abhi";
-				expect(res.body[0].name).to.equal("abhishek");
+				expect(res.body[0].name).to.equal("abhi");
 				done();
 			});
 		});
