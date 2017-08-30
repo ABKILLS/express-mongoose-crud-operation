@@ -4,15 +4,18 @@ const userData = require('../model/schema');
 const sinon = require('sinon');
 const app = require('../app');
 const url = 'http://localhost:3000';
+const http = require('http');
 
 let sinonStub = sinon.stub(userData, 'find');
+let sinonCreate = sinon.stub(userData,'create');
+let sinonUpdate = sinon.stub(userData.prototype,'update');
+let sinonDelete = sinon.stub(userData,'remove');
 
 describe('GET/ hello', () => {
 	it('respond from get ', (done) => {
 		supertest(url)
 		.get('/')
 		.expect(200)
-		//.send('hello world')
 		.end((err, res) => {
 			if (err) 
 				return done(err);
@@ -38,39 +41,96 @@ describe('userData', () => {
 });
 
 describe('CRUD validation',() =>{
-	before(() => {
-		sinonStub.yields(null, [{name: 'abhishek',age: 20}]);
+	let user = [{name: 'abhishek',age: 20, address: "aligarh",salary: 2043295}];
+	before((done) => {
+		sinonStub.yields(null, user);
+		done();
 	});
-	it('Find validation',(done) => {
+	it('\nFind validation',(done) => {
 		supertest(url)
-			.get('/find')
-			.expect(200)
-			.set('Accept', 'application/json')
-			.expect('Content-Type', /json/)
-			.end((err, res) => {
-				if (err) return done(err);
-				expect(res.body[0].name).to.equal("abhishek");
-				expect(res.body[0].age).to.equal(20);
-				done();
+		.get('/find')
+		.expect(200)
+		.set('Accept', 'application/json')
+		.expect('Content-Type', /json/)
+		.end((err, res) => {
+			if (err) return done(err);
+			expect(res.body[0].name).to.equal("abhishek");
+			expect(res.body[0].age).to.equal(20);
+			sinonStub.restore();
+			done();
 		});
 	});
-describe('CRUD validation',() =>{
-	before(() => {
-		sinon.stub(userData, 'create').yields(null, [{name: 'abhishek',age: 20}]);
+});
 
+describe('CRUD validation',() =>{
+	let user = [{name: 'abhishek',age: 20, address: "aligarh",salary: 2043295}];
+	before((done) => {
+		sinonCreate.yields(null, user);
+		done();
 	});
-	it('Insert Validation',(done) => {
+	it('\nInsert Validation',(done) => {
 		supertest(url)
-			.post('/insert')
-			.expect(200)
-			.set('Accept', 'application/json')
-			.expect('Content-Type', /json/)
-			.end((err, res) => {
-				if (err) return done(err);
-				res.body[0].name = "abhi";
-				expect(res.body[0].name).to.equal("abhi");
-				done();
-			});
+		.post('/insert')
+		.set('Accept', 'application/json')
+		.expect('Content-Type', /json/)
+		.expect(200)
+		.send(user)
+		.end((err, res) => {
+			if (err) return done(err);
+			expect(res.body[0].name).to.equal("abhishek");
+			done();
 		});
+	})
+/*connection check*/
+  it('should return 200', function (done) {
+    http.get('http://localhost:3000', function (res) {
+      expect(200).to.equal(200, res.statusCode);
+      done();
+    });
+  });
+});
+
+/*start update validation*/
+describe('Update Testing',(done) =>{
+	beforeEach(() => {
+		sinonUpdate.withArgs({name : 'abhi'},{$set : {name: 'abhishek',age: 20, address: "aligarh",salary: 2043295}})
+		.yields(null, { ok: 1, nModified: 0, n: 0});
+		
 	});
+	it('Update data',(done) => {
+		supertest(url)
+		.put('/update/:abhi')
+    .expect("Content-Type", /json/)
+    .expect(200)
+    .send({name: 'abhishek', age: 20, address: "aligarh", salary: 2043295})
+    .end((err, res) => {
+    		if(err) return done(err);
+    		console.log(res.body);
+        expect(res.body.ok).to.equal(1);
+        expect(res.body.nModified).to.equal(0);
+     		expect(res.body.n).to.equal(0);
+      	done();
+      });
+   	});
+});/*end update validation*/
+
+describe('Delete Testing',(done) =>{
+  beforeEach(() => {
+  	sinonDelete.withArgs({ name : "abhi" }).yields(null, {ok:1, nRemoved: 1, n:1}); 
+  });
+  it('Delete data',(done) => {
+    supertest(url)
+      .delete('/delete')
+      .expect("Content-Type", /json/)
+      .send({ name: "abhi"})
+      .expect(200)
+      .end((err, res) => {
+          if (err) 
+          	return done(err);
+          expect(res.body.ok).to.equal(1);    
+          expect(res.body.nRemoved).to.equal(1);
+          expect(res.body.n).to.equal(1);
+           done(); 
+       });  
+   });
 });
