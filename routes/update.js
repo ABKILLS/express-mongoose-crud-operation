@@ -1,19 +1,16 @@
-import express from 'express';
+const express = require('express');
 const router = express.Router();
-import user from '../model/schema';
-router.put('/update/:id', (req,res) => {
-	user.findOneAndUpdate({_id: req.params.id},
+const user = require('../model/schema');  // importing model/schema.js
+router.put('/:name', (req,res) => {
+	user.update({name: req.params.name},
 		{$set: {name: req.body.name, age: req.body.age, address: req.body.address }},
-		{upsert: true},
-			(err,user) => {
-				if(err) {
-					console.log("error in updation", err);
-				}
-				else {
-					console.log("updated");
-					res.send(user);
-				}
+		(err,user) => {
+			if(err) {
+			 res.send(err);  //if error occurs
 			}
-		);
+			else {
+				res.json(user);  // response to browser in json format
+			}
+	});
 });
-export default router;
+module.exports = router;

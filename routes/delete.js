@@ -1,17 +1,18 @@
-import express from 'express';
+const express = require('express');
 const router = express.Router();
-import user from '../model/schema';
-router.delete('/delete/:id', (req, res) =>{
-  user.findOneAndRemove({
-    _id: req.params.id
+const user = require('../model/schema'); // importing model/schema.js
+
+router.delete('/', (req, res) =>{
+  user.remove({
+    name: req.body.name
   }, (err,user) => {
-    if(err) {
-      res.send('error removing')
-    } else {
-    	console.log('deleted successfully',req.params.id);
-      console.log(user);
+    if(err) {   // if error occurs
+      res.json('err')
+    } 
+    else {
+      res.json(user); // response to browser in json format
     }
   });
 });
 
-export default router;
+module.exports = router;

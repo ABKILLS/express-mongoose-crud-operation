@@ -1,18 +1,17 @@
-import express from 'express';
+const express = require('express');
 const router = express.Router();
-import user from '../model/schema';
+const user = require('../model/schema'); // importing model/schema.js
 
-router.post('/insert', (req,res) => {
+router.post('/', (req,res) => {
 	user.create(req.body,(err,user) => {
-		if(err)
+		if(err)				// if error occurs
 		{
-			console.log("error in insertion");
+			return res.json(err);
 		}
 		else {
-			console.log(user);
-			res.send(user);
+			res.json(user);   // response to browser in json format
 		}
 	});
 });
 
-export default router;
+module.exports = router;
