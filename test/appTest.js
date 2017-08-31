@@ -11,11 +11,11 @@ let sinonCreate = sinon.stub(userData,'create');
 let sinonUpdate = sinon.stub(userData.prototype,'update');
 let sinonDelete = sinon.stub(userData,'remove');
 
-describe('GET/ hello', () => {
+describe('GET/ hello', () => {        //test case for index.js
 	it('respond from get ', (done) => {
 		supertest(url)
 		.get('/')
-		.expect(200)
+		.expect(200)				//status check must be 200 for ok
 		.end((err, res) => {
 			if (err) 
 				return done(err);
@@ -27,7 +27,7 @@ describe('GET/ hello', () => {
 	});
 });
 
-describe('userData', () => {
+describe('userData', () => {									//test case for model/schema.js
 	it('should be invalid if name is empty', (done) => {
 		const user = new userData();
 		user.validate((err) => {
@@ -40,7 +40,7 @@ describe('userData', () => {
 	});
 });
 
-describe('CRUD validation',() =>{
+describe('CRUD validation',() =>{    //test case for find.js
 	let user = [{name: 'abhishek',age: 20, address: "aligarh",salary: 2043295}];
 	before((done) => {
 		sinonStub.yields(null, user);
@@ -49,7 +49,7 @@ describe('CRUD validation',() =>{
 	it('\nFind validation',(done) => {
 		supertest(url)
 		.get('/find')
-		.expect(200)
+		.expect(200)     //status check must be 200 for ok
 		.set('Accept', 'application/json')
 		.expect('Content-Type', /json/)
 		.end((err, res) => {
@@ -62,7 +62,7 @@ describe('CRUD validation',() =>{
 	});
 });
 
-describe('CRUD validation',() =>{
+describe('CRUD validation',() =>{										//test case for insert.js
 	let user = [{name: 'abhishek',age: 20, address: "aligarh",salary: 2043295}];
 	before((done) => {
 		sinonCreate.yields(null, user);
@@ -73,14 +73,14 @@ describe('CRUD validation',() =>{
 		.post('/insert')
 		.set('Accept', 'application/json')
 		.expect('Content-Type', /json/)
-		.expect(200)
+		.expect(200)			//status check must be 200 for ok
 		.send(user)
 		.end((err, res) => {
 			if (err) return done(err);
 			expect(res.body[0].name).to.equal("abhishek");
 			done();
 		});
-	})
+	}); 
 /*connection check*/
   it('should return 200', function (done) {
     http.get('http://localhost:3000', function (res) {
@@ -88,7 +88,7 @@ describe('CRUD validation',() =>{
       done();
     });
   });
-});
+});/*ends delete validation*/
 
 /*start update validation*/
 describe('Update Testing',(done) =>{
@@ -101,19 +101,20 @@ describe('Update Testing',(done) =>{
 		supertest(url)
 		.put('/update/:abhi')
     .expect("Content-Type", /json/)
-    .expect(200)
+    .expect(200)					//status check must be 200 for ok
     .send({name: 'abhishek', age: 20, address: "aligarh", salary: 2043295})
     .end((err, res) => {
-    		if(err) return done(err);
-    		console.log(res.body);
-        expect(res.body.ok).to.equal(1);
-        expect(res.body.nModified).to.equal(0);
-     		expect(res.body.n).to.equal(0);
-      	done();
-      });
-   	});
+  		if(err) return done(err);
+  		console.log(res.body);
+      expect(res.body.ok).to.equal(1);
+      expect(res.body.nModified).to.equal(0);
+   		expect(res.body.n).to.equal(0);
+    	done();
+    });
+  });
 });/*end update validation*/
 
+/*start delete validation*/
 describe('Delete Testing',(done) =>{
   beforeEach(() => {
   	sinonDelete.withArgs({ name : "abhi" }).yields(null, {ok:1, nRemoved: 1, n:1}); 
@@ -123,14 +124,15 @@ describe('Delete Testing',(done) =>{
       .delete('/delete')
       .expect("Content-Type", /json/)
       .send({ name: "abhi"})
-      .expect(200)
+      .expect(200)					//status check must be 200 for ok
       .end((err, res) => {
-          if (err) 
-          	return done(err);
-          expect(res.body.ok).to.equal(1);    
-          expect(res.body.nRemoved).to.equal(1);
-          expect(res.body.n).to.equal(1);
-           done(); 
-       });  
-   });
+      	if (err) 
+      		return done(err);
+      	expect(res.body.ok).to.equal(1);    
+      	expect(res.body.nRemoved).to.equal(1);
+      	expect(res.body.n).to.equal(1);
+      	done(); 
+      });  
+  });
 });
+/*ends delete validation*/
